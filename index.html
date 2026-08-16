@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meetink — writers and artists, bound into one book</title>
+<meta name="description" content="Meetink pairs writers with visual artists to make comics, graphic novels and manga. Post a beat, get matched, commission a paid test page, split the rights.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Archivo:wght@400;500;600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ---- design tokens ----------------------------------------- */
+  :root{
+    --ink:      #15121C;   /* near-black with a violet cast */
+    --paper:    #DCDEE1;   /* cool newsprint grey */
+    --paper-hi: #E9EBED;   /* panel interiors */
+    --pink:     #FF3E88;   /* riso fluorescent pink */
+    --blue:     #2436E8;   /* riso federal blue */
+    --mute:     #6A6A78;
+
+    --panel-border: 3px solid var(--ink);
+    --shadow: 6px 6px 0 var(--ink);
+
+    --display: "Bricolage Grotesque", system-ui, sans-serif;
+    --body:    "Archivo", system-ui, sans-serif;
+    --script:  "Courier Prime", ui-monospace, monospace;
+
+    --pad: clamp(20px, 5vw, 72px);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--body);
+    font-size:17px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(rgba(21,18,28,.045) 1px, transparent 1.1px);
+    background-size:4px 4px;               /* paper tooth */
+  }
+  svg{ max-width:100%; display:block; }
+  a{ color:inherit; }
+  :focus-visible{ outline:3px solid var(--blue); outline-offset:3px; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding-inline:var(--pad); }
+
+  .eyebrow{
+    font-family:var(--script);
+    font-size:12px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase;
+    color:var(--mute); margin:0;
+  }
+
+  /* ---- nav ---------------------------------------------------- */
+  .nav{
+    display:flex; align-items:center; gap:28px;
+    padding-block:22px;
+    border-bottom:var(--panel-border);
+  }
+  .logo{
+    font-family:var(--display); font-weight:800;
+    font-size:23px; letter-spacing:-.03em;
+    text-decoration:none; margin-right:auto;
+    text-shadow:2px 0 0 var(--pink);
+  }
+  .nav-link{
+    font-size:14px; font-weight:500; text-decoration:none;
+    border-bottom:2px solid transparent;
+  }
+  .nav-link:hover{ border-bottom-color:var(--pink); }
+  @media (max-width:760px){ .nav-link{ display:none; } }
+
+  .btn{
+    display:inline-block;
+    font-family:var(--body); font-size:15px; font-weight:600;
+    padding:12px 20px;
+    border:var(--panel-border);
+    background:var(--pink); color:#fff;
+    text-decoration:none; cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover{ transform:translate(2px,2px); box-shadow:2px 2px 0 var(--ink); }
+  .btn:active{ transform:translate(4px,4px); box-shadow:0 0 0 var(--ink); }
+  .btn--ghost{ background:transparent; color:var(--ink); }
+  .btn--blue{ background:var(--blue); color:#fff; }
+
+  /* ---- hero --------------------------------------------------- */
+  .hero{ padding-block:clamp(44px,7vw,88px) 0; }
+  .hero h1{
+    font-family:var(--display); font-weight:800;
+    font-size:clamp(46px,9vw,116px);
+    line-height:.92; letter-spacing:-.045em;
+    text-transform:uppercase;
+    margin:14px 0 0; max-width:14ch;
+    text-shadow:.045em .035em 0 var(--pink);   /* riso misregistration */
+  }
+  .hero h1 em{ font-style:normal; color:var(--blue); }
+  .lede{ max-width:52ch; margin:26px 0 0; font-size:clamp(17px,2vw,20px); }
+  .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:28px; }
+
+  /* ---- signature element: the press --------------------------- */
+  .press-frame{ padding-block:clamp(40px,6vw,72px); }
+  .press{ display:grid; grid-template-columns:1fr auto 1fr; align-items:stretch; }
+
+  .panel{
+    border:var(--panel-border);
+    background:var(--paper-hi);
+    box-shadow:var(--shadow);
+    padding:22px;
+    min-height:340px;
+    transition:transform .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .panel--script{ transform:translateX(-26px) rotate(-1.1deg); }
+  .panel--art{ transform:translateX(26px) rotate(1.1deg); padding:0; overflow:hidden; }
+  .is-bound .panel--script,
+  .is-bound .panel--art{ transform:translateX(0) rotate(0deg); }
+
+  .gutter{
+    width:clamp(48px,7vw,104px);
+    display:grid; place-items:center;
+    position:relative;
+    transition:width .7s cubic-bezier(.2,.8,.2,1);
+  }
+  .is-bound .gutter{ width:14px; }
+  .gutter-label{
+    font-family:var(--script); font-size:11px; font-weight:700;
+    letter-spacing:.2em; text-transform:uppercase; color:var(--mute);
+    writing-mode:vertical-rl; white-space:nowrap;
+    transition:opacity .3s ease;
+  }
+  .is-bound .gutter-label{ opacity:0; }
+  .gutter::before{
+    content:""; position:absolute; top:0; bottom:0; left:50%;
+    width:3px; background:var(--ink);
+    transform:translateX(-50%) scaleY(0);
+    transition:transform .5s ease .25s;
+  }
+  .is-bound .gutter::before{ transform:translateX(-50%) scaleY(1); }
+
+  .script-head,.art-head{
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px;
+  }
+  .script-head{ border-bottom:2px solid var(--ink); padding-bottom:10px; margin-bottom:16px; }
+  .art-head{ padding:22px 22px 10px; }
+  .who-tag{
+    font-family:var(--script); font-size:11px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase;
+  }
+  .who-tag--pink{ color:var(--pink); }
+  .who-tag--blue{ color:var(--blue); }
+
+  .script{ font-family:var(--script); font-size:13.5px; line-height:1.75; }
+  .script p{ margin:0 0 10px; }
+  .script .slug{ font-weight:700; letter-spacing:.1em; }
+  .script .who{ font-weight:700; margin-top:14px; margin-bottom:2px; }
+  .script .dir{ color:var(--mute); }
+
+  .art-stage{ position:relative; }
+  .art-stage::after{                       /* halftone screen */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:radial-gradient(rgba(21,18,28,.26) 1px, transparent 1.2px);
+    background-size:5px 5px; mix-blend-mode:multiply;
+  }
+
+  .press-bar{ display:flex; flex-wrap:wrap; gap:16px; align-items:center; margin-top:26px; }
+  .press-note{ font-size:14px; color:var(--mute); max-width:48ch; margin:0; }
+
+  @media (max-width:780px){
+    .press{ grid-template-columns:1fr; }
+    .gutter{ width:auto; height:56px; }
+    .is-bound .gutter{ height:14px; }
+    .gutter-label{ writing-mode:horizontal-tb; }
+    .gutter::before{
+      top:50%; bottom:auto; left:0; right:0; width:auto; height:3px;
+      transform:translateY(-50%) scaleX(0);
+    }
+    .is-bound .gutter::before{ transform:translateY(-50%) scaleX(1); }
+    .panel--script{ transform:translateY(-14px) rotate(-1deg); }
+    .panel--art{ transform:translateY(14px) rotate(1deg); }
+    .is-bound .panel--script,
+    .is-bound .panel--art{ transform:none; }
+  }
+
+  /* ---- bands -------------------------------------------------- */
+  .band{ border-top:var(--panel-border); padding-block:clamp(48px,7vw,90px); }
+  .band h2{
+    font-family:var(--display); font-weight:800;
+    font-size:clamp(30px,4.6vw,54px); line-height:1;
+    letter-spacing:-.035em; text-transform:uppercase;
+    margin:12px 0 0; max-width:20ch;
+  }
+  .band-intro{ max-width:56ch; margin-top:16px; color:var(--mute); }
+
+  /* a pairing is a real sequence, so it gets numbers */
+  .steps{
+    display:grid; margin-top:44px;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    border:var(--panel-border); box-shadow:var(--shadow);
+    background:var(--paper-hi);
+  }
+  .step{ padding:26px 24px; border-right:var(--panel-border); }
+  .step:last-child{ border-right:0; }
+  .step-n{
+    font-family:var(--display); font-weight:800; font-size:40px;
+    line-height:1; color:var(--pink); letter-spacing:-.04em;
+  }
+  .step h3{ font-family:var(--body); font-size:17px; font-weight:600; margin:12px 0 6px; }
+  .step p{ margin:0; font-size:15px; color:var(--mute); }
+  @media (max-width:760px){
+    .step{ border-right:0; border-bottom:var(--panel-border); }
+    .step:last-child{ border-bottom:0; }
+  }
+
+  .roster{ display:grid; gap:22px; margin-top:40px; grid-template-columns:repeat(auto-fit,minmax(258px,1fr)); }
+  .card{
+    border:var(--panel-border); background:var(--paper-hi);
+    box-shadow:var(--shadow); padding:22px;
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .card h3{ font-family:var(--display); font-weight:600; font-size:22px; margin:6px 0 0; letter-spacing:-.02em; }
+  .card p{ margin:0; font-size:15px; color:var(--mute); }
+  .rate{ font-family:var(--script); font-size:13px; font-weight:700; }
+  .tags{ display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; padding-top:12px; }
+  .tag{
+    font-family:var(--script); font-size:11px; font-weight:700;
+    letter-spacing:.08em; text-transform:uppercase;
+    border:2px solid var(--ink); padding:3px 8px;
+  }
+
+  .terms{ display:grid; gap:0 34px; margin-top:40px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); }
+  .term{ border-top:2px solid var(--ink); padding:20px 0 24px; }
+  .term h3{ font-family:var(--body); font-size:16px; font-weight:600; margin:10px 0 6px; }
+  .term p{ margin:0; font-size:15px; color:var(--mute); }
+  .term .k{
+    font-family:var(--script); font-size:11px; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--blue);
+  }
+
+  .close{
+    border:var(--panel-border); box-shadow:var(--shadow);
+    background:var(--ink); color:var(--paper);
+    padding:clamp(28px,5vw,56px);
+    margin-block:clamp(48px,7vw,90px);
+  }
+  .close h2{
+    font-family:var(--display); font-weight:800; text-transform:uppercase;
+    font-size:clamp(30px,5vw,58px); line-height:.95; letter-spacing:-.04em;
+    margin:10px 0 0; max-width:18ch;
+    text-shadow:.04em .03em 0 var(--pink);
+  }
+  .close p{ max-width:50ch; margin:20px 0 0; color:#B9BAC4; }
+  .close .eyebrow{ color:var(--pink); }
+  .close-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:26px; }
+
+  footer{ border-top:var(--panel-border); padding-block:28px 60px; font-size:14px; color:var(--mute); }
+  .foot-row{ display:flex; flex-wrap:wrap; gap:18px; align-items:baseline; }
+  .foot-row .logo{ text-shadow:none; font-size:18px; color:var(--ink); }
+  .disclaimer{ margin-top:14px; font-family:var(--script); font-size:12px; }
+
+  @media (prefers-reduced-motion:reduce){
+    *{ transition-duration:.01ms !important; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="wrap">
+  <nav class="nav">
+    <a class="logo" href="#top">MEETINK</a>
+    <a class="nav-link" href="#how">How a pairing works</a>
+    <a class="nav-link" href="#roster">Who's here</a>
+    <a class="nav-link" href="#terms">The terms</a>
+    <a class="btn" href="#start">Start a pairing</a>
+  </nav>
+</header>
+
+<main id="top">
+
+  <section class="wrap hero">
+    <p class="eyebrow">Two-ink press · Berlin · 4,180 pages bound</p>
+    <h1>The story happens in the <em>gutter</em>.</h1>
+    <p class="lede">A script is half a comic. A drawing is the other half. Meetink pairs writers with visual artists — and puts a paid test page between you before either of you commits to a book.</p>
+    <div class="hero-actions">
+      <a class="btn" href="#start">I have a script</a>
+      <a class="btn btn--blue" href="#start">I draw</a>
+    </div>
+  </section>
+
+  <section class="wrap press-frame">
+    <div class="press" id="press">
+
+      <article class="panel panel--script">
+        <div class="script-head">
+          <span class="who-tag who-tag--pink">Writer · Noor Haddad</span>
+          <span class="who-tag">page 1</span>
+        </div>
+        <div class="script">
+          <p class="slug">PAGE ONE — FOUR PANELS</p>
+          <p class="dir">1. Wide. A rooftop in the rain. She has been standing here since the letter arrived. The city behind her is one flat colour and nothing else.</p>
+          <p class="who">CAPTION</p>
+          <p>I read it eleven times. It got shorter every time.</p>
+          <p class="who">MARA</p>
+          <p>You can come up. It's only water.</p>
+          <p class="dir">2. Close on her hands. The paper is going soft.</p>
+        </div>
+      </article>
+
+      <div class="gutter" aria-hidden="true">
+        <span class="gutter-label">the gutter</span>
+      </div>
+
+      <article class="panel panel--art">
+        <div class="art-head">
+          <span class="who-tag who-tag--blue">Artist · Émile Vance</span>
+          <span class="who-tag">test page</span>
+        </div>
+        <div class="art-stage">
+          <svg viewBox="0 0 480 300" role="img" aria-label="A lone figure on a rooftop in the rain, drawn in flat pink and blue inks.">
+            <rect width="480" height="300" fill="#E9EBED"/>
+            <circle cx="352" cy="92" r="66" fill="#FF3E88"/>
+            <g fill="#2436E8">
+              <rect x="0"   y="176" width="62" height="124"/>
+              <rect x="70"  y="204" width="48" height="96"/>
+              <rect x="126" y="160" width="40" height="140"/>
+              <rect x="300" y="196" width="56" height="104"/>
+              <rect x="364" y="168" width="44" height="132"/>
+              <rect x="416" y="212" width="64" height="88"/>
+            </g>
+            <rect x="150" y="242" width="180" height="58" fill="#15121C"/>
+            <g fill="#15121C">
+              <circle cx="240" cy="150" r="19"/>
+              <path d="M222 172 h36 l14 74 h-64 z"/>
+              <rect x="214" y="176" width="10" height="52" transform="rotate(9 219 176)"/>
+              <rect x="256" y="176" width="10" height="52" transform="rotate(-9 261 176)"/>
+            </g>
+            <g stroke="#2436E8" stroke-width="2.5" opacity=".6" fill="none">
+              <path d="M28 20 l-14 46 M88 4 l-14 46 M148 34 l-14 46 M208 8 l-14 46
+                       M268 40 l-14 46 M328 14 l-14 46 M388 44 l-14 46 M448 18 l-14 46
+                       M58 70 l-14 46 M178 84 l-14 46 M298 96 l-14 46 M418 88 l-14 46"/>
+            </g>
+          </svg>
+        </div>
+      </article>
+
+    </div>
+
+    <div class="press-bar">
+      <button class="btn btn--ghost" id="bindBtn" aria-pressed="false">Bind the page</button>
+      <p class="press-note">In comics, the reader does the work in the space between panels. Meetink puts two people either side of it: close the gap, and they've made one thing.</p>
+    </div>
+  </section>
+
+  <section class="wrap band" id="how">
+    <p class="eyebrow">How a pairing works</p>
+    <h2>Four steps, and money changes hands at step three.</h2>
+    <p class="band-intro">Most collaborations die in the group chat. This is the order we make people work in, because it's the order that survives.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-n">01</div>
+        <h3>Post one beat</h3>
+        <p>Not the whole saga. One scene, up to 400 words, plus the tone you're after.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">02</div>
+        <h3>Read the shortlist</h3>
+        <p>Five people whose pages fit your beat. You see their work, rates and turnaround before you write to anyone.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">03</div>
+        <h3>Commission a test page</h3>
+        <p>One page, paid up front, held in escrow. Either side can walk after it with no bad blood.</p>
+      </div>
+      <div class="step">
+        <div class="step-n">04</div>
+        <h3>Bind the book</h3>
+        <p>Sign a page rate or a rights split from our templates. Meetink takes 7% and stays out of the way.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap band" id="roster">
+    <p class="eyebrow">Who's here this week</p>
+    <h2>Open for a pairing.</h2>
+    <div class="roster">
+      <article class="card">
+        <span class="who-tag who-tag--blue">Artist</span>
+        <h3>Émile Vance</h3>
+        <p>Flat two-ink pages, heavy blacks, weather as a character. Ten years of storyboards before this.</p>
+        <span class="rate">€140 / finished page · 6 pages a month</span>
+        <div class="tags"><span class="tag">Noir</span><span class="tag">Two-ink</span><span class="tag">Silent pages</span></div>
+      </article>
+      <article class="card">
+        <span class="who-tag who-tag--pink">Writer</span>
+        <h3>Noor Haddad</h3>
+        <p>Quiet, dialogue-led stories about people who arrive somewhere late. Has 24 pages of script ready to draw.</p>
+        <span class="rate">Rights split, 50/50 · wants one artist</span>
+        <div class="tags"><span class="tag">Literary</span><span class="tag">Slow burn</span><span class="tag">Rooftops</span></div>
+      </article>
+      <article class="card">
+        <span class="who-tag who-tag--blue">Artist</span>
+        <h3>Riko Sasaki</h3>
+        <p>Shōnen-trained inker, screentone by hand, fight choreography that reads right to left without arrows.</p>
+        <span class="rate">€95 / page · takes two books at a time</span>
+        <div class="tags"><span class="tag">Manga</span><span class="tag">Screentone</span><span class="tag">Action</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap band" id="terms">
+    <p class="eyebrow">The terms</p>
+    <h2>Who owns it, who gets paid, who can leave.</h2>
+    <p class="band-intro">The three questions that break collaborations. Answer them on day one, in a template you can read in five minutes.</p>
+    <div class="terms">
+      <div class="term">
+        <span class="k">Rights</span>
+        <h3>Neither of you signs it away</h3>
+        <p>Writers keep the story, artists keep the pages, adaptation money splits by whatever you agreed. Meetink never takes a stake in the work.</p>
+      </div>
+      <div class="term">
+        <span class="k">Money</span>
+        <h3>Escrow on every page</h3>
+        <p>The fee is held before the artist starts and releases on delivery. No page gets drawn on a promise.</p>
+      </div>
+      <div class="term">
+        <span class="k">Exit</span>
+        <h3>A kill fee, not a fight</h3>
+        <p>Either side can end a pairing at a chapter break. The half-finished chapter pays at 50% and everyone keeps their files.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="start">
+    <div class="close">
+      <p class="eyebrow">Next intake closes Friday</p>
+      <h2>Bring half a comic. Leave with a page.</h2>
+      <p>Tell us whether you write or you draw, and post one beat. The first shortlist lands in your inbox inside 48 hours.</p>
+      <div class="close-actions">
+        <a class="btn" href="#start">I have a script</a>
+        <a class="btn btn--blue" href="#start">I draw</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <div class="foot-row">
+    <span class="logo">MEETINK</span>
+    <a href="#how">How a pairing works</a>
+    <a href="#roster">Who's here</a>
+    <a href="#terms">The terms</a>
+  </div>
+  <p class="disclaimer">Meetink is a fictional company. Everyone named on this page was invented for a demo.</p>
+</footer>
+
+<script>
+  const press = document.getElementById('press');
+  const btn   = document.getElementById('bindBtn');
+
+  function setBound(bound){
+    press.classList.toggle('is-bound', bound);
+    btn.setAttribute('aria-pressed', String(bound));
+    btn.textContent = bound ? 'Unbind the page' : 'Bind the page';
+  }
+
+  btn.addEventListener('click', function(){
+    setBound(!press.classList.contains('is-bound'));
+  });
+
+  // Bind itself once, the first time the panels are properly on screen.
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting){
+        setTimeout(function(){ setBound(true); }, 700);
+        io.disconnect();
+      }
+    });
+  }, { threshold: 0.5 });
+  io.observe(press);
+</script>
+
+</body>
+</html>
